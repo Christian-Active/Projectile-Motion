@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    />
+    <title>Ultimate Projectile Simulation</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        font-family: "Open Sans", sans-serif;
+        background: #1f1f2e;
+        color: #f0f0f0;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+      body h2 {
+        font-size: 2vw;
+      }
+
+      .main-container {
+        width: 90%;
+        margin: 10px auto;
+        display: flex;
+        height: calc(100% - 40px);
+        column-gap: 5%;
+        padding: 10px;
+        box-sizing: border-box;
+      }
+
+      .left-panel {
+        display: flex;
+        flex-direction: column;
+        flex: 2;
+        gap: 5px;
+      }
+      #motionInfo {
+        background: #2b2b3c;
+        border: 1px solid #555;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        margin-bottom: 5px;
+        color: #f0f0f0;
+        width: fit-content;
+      }
+      #motionInfo span {
+        font-weight: bold;
+        font-style: italic;
+      }
+      #simCanvas {
+        background: #12122a;
+        border: 1px solid #555;
+        height: 250px;
+        width: 100%;
+      }
+      .left-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 5px;
+      }
+      .left-buttons button {
+        background: #2b2b3c;
+        color: #f0f0f0;
+        font-size: 12px;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .left-buttons button:hover {
+        background: #3b3b5a;
+      }
+
+      .side-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        overflow-y: auto;
+      }
+      .controls {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        flex: 1;
+      }
+      .control {
+        background: #2b2b3c;
+        border: 1px solid #555;
+        padding: 6px;
+        border-radius: 6px;
+        display: flex;
+        flex-direction: column;
+        font-size: 12px;
+        color: #f0f0f0;
+      }
+      input[type="range"],
+      select {
+        width: 100%;
+        accent-color: #3b3b5a;
+        cursor: pointer;
+        background: #3b3b5a;
+        color: #f0f0f0;
+      }
+      input[type="checkbox"] {
+        cursor: pointer;
+        accent-color: #3b3b5a;
+      }
+      select {
+        background-color: #3b3b5a;
+      }
+
+      #results {
+        background: #2b2b3c;
+        border: 1px solid #555;
+        padding: 6px;
+        border-radius: 6px;
+        font-size: 14px;
+        color: #f0f0f0;
+      }
+
+      #graphContainer {
+        display: none;
+        flex-direction: column;
+        gap: 5px;
+        margin-top: 25px;
+      }
+      #graphCanvas {
+        width: 100%;
+        height: 120px;
+        border: 1px solid #555;
+        background: #1b1b2e;
+      }
+      #graphLegend {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        font-weight: bold;
+        font-size: 12px;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        color: #f0f0f0;
+      }
+      .legend-color {
+        width: 15px;
+        height: 4px;
+      }
+
+      h2 {
+        text-align: center;
+        margin: 8px 0;
+        font-size: 18px;
+        color: #f0f0f0;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Projectile Motion Simulation</h2>
+
+    <div class="main-container">
+      <div class="left-panel">
+        <div id="motionInfo">
+          Time: <span id="timeResult">0</span> s | Max Height:
+          <span id="heightResult">0</span> m | Range:
+          <span id="rangeResult">0</span> m | Impact Speed:
+          <span id="impactResult">0</span> m/s
+        </div>
+        <canvas id="simCanvas" width="600" height="250"></canvas>
+        <div class="left-buttons">
+          <button onclick="startSimulation()">
+            <span class="material-symbols-outlined"> play_arrow </span>
+          </button>
+          <button onclick="pauseSim()">
+            <span class="material-symbols-outlined"> pause</span>
+          </button>
+          <button onclick="resumeSim()">
+            <span class="material-symbols-outlined"> resume </span>
+          </button>
+          <button onclick="stepSim()">
+            <span class="material-symbols-outlined"> skip_next </span>
+          </button>
+        </div>
+        <div id="graphContainer">
+          <canvas id="graphCanvas" width="600" height="120"></canvas>
+          <div id="graphLegend">
+            <div class="legend-item">
+              <div class="legend-color" style="background: red"></div>
+              KE
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: blue"></div>
+              PE
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: orange"></div>
+              Total Energy
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-panel">
+        <div class="controls">
+          <div class="control">
+            <label
+              ><input type="checkbox" id="airToggle" /> Enable Air
+              Resistance</label
+            >
+          </div>
+          <div class="control">
+            <label
+              ><input type="checkbox" id="graphToggle" /> Show Energy
+              Graph</label
+            >
+          </div>
+          <div class="control">
+            <label>Initial Speed: <span id="speedVal">50</span> m/s</label
+            ><input id="speed" type="range" min="1" max="200" value="50" />
+          </div>
+          <div class="control">
+            <label>Launch Angle: <span id="angleVal">45</span>°</label
+            ><input id="angle" type="range" min="0" max="90" value="45" />
+          </div>
+          <div class="control">
+            <label>Mass: <span id="massVal">1</span> kg</label
+            ><input
+              id="mass"
+              type="range"
+              min="0.1"
+              max="10"
+              step="0.1"
+              value="1"
+            />
+          </div>
+          <div class="control">
+            <label>Drag Coefficient: <span id="dragVal">0</span></label
+            ><input
+              id="drag"
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value="0"
+            />
+          </div>
+          <div class="control">
+            <label>Time Step: <span id="dtVal">0.02</span>s</label
+            ><input
+              id="dt"
+              type="range"
+              min="0.005"
+              max="0.05"
+              step="0.005"
+              value="0.02"
+            />
+          </div>
+          <div class="control">
+            <label>Zoom: <span id="zoomVal">1</span>x</label
+            ><input
+              id="zoom"
+              type="range"
+              min="0.5"
+              max="3"
+              step="0.1"
+              value="1"
+            />
+          </div>
+          <div class="control">
+            <label>Preset:</label>
+            <select id="preset">
+              <option value="custom">Custom</option>
+              <option value="baseball">Baseball</option>
+              <option value="arrow">Arrow</option>
+              <option value="cannonball">Cannonball</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const simCanvas = document.getElementById("simCanvas");
+      const gctx = document.getElementById("graphCanvas").getContext("2d");
+      const ctx = simCanvas.getContext("2d");
+      const graphContainer = document.getElementById("graphContainer");
+
+      const speed = document.getElementById("speed");
+      const angle = document.getElementById("angle");
+      const mass = document.getElementById("mass");
+      const drag = document.getElementById("drag");
+      const airToggle = document.getElementById("airToggle");
+      const graphToggle = document.getElementById("graphToggle");
+      const dt = document.getElementById("dt");
+      const zoomInput = document.getElementById("zoom");
+      const preset = document.getElementById("preset");
+
+      const speedVal = document.getElementById("speedVal");
+      const angleVal = document.getElementById("angleVal");
+      const massVal = document.getElementById("massVal");
+      const dragVal = document.getElementById("dragVal");
+      const dtValLabel = document.getElementById("dtVal");
+      const zoomVal = document.getElementById("zoomVal");
+
+      const timeResult = document.getElementById("timeResult");
+      const heightResult = document.getElementById("heightResult");
+      const rangeResult = document.getElementById("rangeResult");
+      const impactResult = document.getElementById("impactResult");
+
+      const G = 9.81;
+      let running = false,
+        paused = false;
+      let trail = [],
+        energyPoints = [];
+      let vx = 0,
+        vy = 0,
+        x = 0,
+        y = 0,
+        timeT = 0,
+        maxHeight = 0,
+        dtVal = 0.02,
+        zoom = 1;
+
+      graphToggle.checked = false;
+      graphContainer.style.display = "none";
+      graphToggle.addEventListener("change", () => {
+        graphContainer.style.display = graphToggle.checked ? "flex" : "none";
+      });
+
+      function updateLabels() {
+        speedVal.textContent = Number(speed.value).toFixed(2);
+        angleVal.textContent = Number(angle.value).toFixed(1);
+        massVal.textContent = Number(mass.value).toFixed(2);
+        dragVal.textContent = Number(drag.value).toFixed(2);
+        dtValLabel.textContent = Number(dt.value).toFixed(3);
+        zoomVal.textContent = Number(zoomInput.value).toFixed(2);
+      }
+
+      [speed, angle, mass, drag, dt, zoomInput].forEach((i) =>
+        i.addEventListener("input", updateLabels)
+      );
+      updateLabels();
+
+      preset.addEventListener("change", () => {
+        if (preset.value === "baseball") {
+          mass.value = "0.145";
+          drag.value = "0.35";
+        } else if (preset.value === "arrow") {
+          mass.value = "0.04";
+          drag.value = "0.1";
+        } else if (preset.value === "cannonball") {
+          mass.value = "6";
+          drag.value = "0.47";
+        }
+        updateLabels();
+      });
+
+      function animate() {
+        if (!running) return;
+        if (!paused) {
+          const m = Number(mass.value) || 1;
+          const c = Number(drag.value) || 0;
+          const v = Math.sqrt(vx * vx + vy * vy) || 1e-8;
+          const ax = airToggle.checked ? -(c * v * vx) / m : 0;
+          const ay = airToggle.checked ? -G - (c * v * vy) / m : -G;
+
+          vx += ax * dtVal;
+          vy += ay * dtVal;
+          x += vx * dtVal;
+          y += vy * dtVal;
+          timeT += dtVal;
+          if (y > maxHeight) maxHeight = y;
+
+          const KE = 0.5 * m * (vx * vx + vy * vy);
+          const PE = m * G * Math.max(y, 0);
+          energyPoints.push({ t: timeT, ke: KE, pe: PE, te: KE + PE });
+          trail.push({ x, y, vx, vy });
+
+          if (y < 0) {
+            timeResult.textContent = timeT.toFixed(3);
+            rangeResult.textContent = x.toFixed(3);
+            impactResult.textContent = Math.sqrt(vx * vx + vy * vy).toFixed(3);
+            heightResult.textContent = maxHeight.toFixed(3);
+            running = false;
+            render();
+            drawGraph();
+            return;
+          }
+        }
+        render();
+        drawGraph();
+        requestAnimationFrame(animate);
+      }
+
+      function startSimulation() {
+        const v0 = Number(speed.value) || 0;
+        const ang = (Number(angle.value) * Math.PI) / 180 || 0;
+        dtVal = Number(dt.value) || 0.02;
+        zoom = Number(zoomInput.value) || 1;
+
+        x = 0;
+        y = 0;
+        vx = v0 * Math.cos(ang);
+        vy = v0 * Math.sin(ang);
+        timeT = 0;
+        maxHeight = 0;
+        trail = [];
+        energyPoints = [];
+        running = true;
+        paused = false;
+
+        timeResult.textContent = "0";
+        heightResult.textContent = "0";
+        rangeResult.textContent = "0";
+        impactResult.textContent = "0";
+
+        requestAnimationFrame(animate);
+      }
+
+      function pauseSim() {
+        paused = true;
+      }
+      function resumeSim() {
+        if (!running) return;
+        paused = false;
+        requestAnimationFrame(animate);
+      }
+      function stepSim() {
+        if (!running) {
+          startSimulation();
+          paused = true;
+          return;
+        }
+        if (!paused) {
+          paused = true;
+          return;
+        }
+        const m = Number(mass.value) || 1;
+        const c = Number(drag.value) || 0;
+        const v = Math.sqrt(vx * vx + vy * vy) || 1e-8;
+        const ax = airToggle.checked ? -(c * v * vx) / m : 0;
+        const ay = airToggle.checked ? -G - (c * v * vy) / m : -G;
+        vx += ax * dtVal;
+        vy += ay * dtVal;
+        x += vx * dtVal;
+        y += vy * dtVal;
+        timeT += dtVal;
+        if (y > maxHeight) maxHeight = y;
+        trail.push({ x, y, vx, vy });
+        const KE = 0.5 * m * (vx * vx + vy * vy);
+        const PE = m * G * Math.max(y, 0);
+        energyPoints.push({ t: timeT, ke: KE, pe: PE, te: KE + PE });
+
+        if (y < 0) {
+          running = false;
+          timeResult.textContent = timeT.toFixed(3);
+          rangeResult.textContent = x.toFixed(3);
+          impactResult.textContent = Math.sqrt(vx * vx + vy * vy).toFixed(3);
+          heightResult.textContent = maxHeight.toFixed(3);
+        }
+        render();
+        drawGraph();
+      }
+
+      function render() {
+        ctx.clearRect(0, 0, simCanvas.width, simCanvas.height);
+        if (trail.length === 0) return;
+
+        ctx.strokeStyle = "blue";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        trail.forEach((p, i) => {
+          const px = p.x * zoom;
+          const py = simCanvas.height - p.y * zoom;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        });
+        ctx.stroke();
+
+        const last = trail[trail.length - 1];
+        ctx.fillStyle = "red";
+        ctx.beginPath();
+        ctx.arc(
+          last.x * zoom,
+          simCanvas.height - last.y * zoom,
+          6,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+
+        const scale = 0.5 * zoom;
+        ctx.strokeStyle = "green";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(last.x * zoom, simCanvas.height - last.y * zoom);
+        ctx.lineTo(
+          last.x * zoom + last.vx * scale,
+          simCanvas.height - last.y * zoom - last.vy * scale
+        );
+        ctx.stroke();
+      }
+
+      function drawGraph() {
+        if (!graphToggle.checked) {
+          gctx.clearRect(0, 0, gctx.canvas.width, gctx.canvas.height);
+          return;
+        }
+        gctx.clearRect(0, 0, gctx.canvas.width, gctx.canvas.height);
+        if (energyPoints.length < 2) return;
+        const w = gctx.canvas.width,
+          h = gctx.canvas.height;
+        const maxT = Math.max(energyPoints[energyPoints.length - 1].t, 1e-8);
+        const maxE = Math.max(
+          1e-8,
+          ...energyPoints.map((p) => Math.max(p.ke, p.pe, p.te))
+        );
+
+        const plotLine = (color, key) => {
+          gctx.strokeStyle = color;
+          gctx.beginPath();
+          energyPoints.forEach((p, i) => {
+            const px = (p.t / maxT) * (w - 20);
+            const py = h - (p[key] / maxE) * (h - 10);
+            if (!isFinite(px) || !isFinite(py)) return;
+            if (i === 0) gctx.moveTo(px, py);
+            else gctx.lineTo(px, py);
+          });
+          gctx.stroke();
+        };
+
+        plotLine("red", "ke");
+        plotLine("blue", "pe");
+        plotLine("orange", "te");
+      }
+    </script>
+  </body>
+</html>
