@@ -191,11 +191,10 @@
           <button onclick="startSimulation()">
             <span class="material-symbols-outlined"> play_arrow </span>
           </button>
-          <button onclick="pauseSim()">
-            <span class="material-symbols-outlined"> pause</span>
-          </button>
-          <button onclick="resumeSim()">
-            <span class="material-symbols-outlined"> resume </span>
+          <button id="pauseResumeBtn" onclick="togglePauseResume()">
+            <span class="material-symbols-outlined" id="pauseResumeIcon">
+              play_pause
+            </span>
           </button>
           <button onclick="stepSim()">
             <span class="material-symbols-outlined"> skip_next </span>
@@ -375,6 +374,14 @@
         updateLabels();
       });
 
+      function togglePauseResume() {
+        if (!running) return;
+        paused = !paused;
+        document.getElementById("pauseResumeIcon").textContent = paused
+          ? "play_arrow"
+          : "pause";
+        if (!paused) requestAnimationFrame(animate);
+      }
       function animate() {
         if (!running) return;
         if (!paused) {
@@ -553,6 +560,7 @@
         plotLine("blue", "pe");
         plotLine("orange", "te");
       }
+      // Remaining functions startSimulation, stepSim, animate, render, drawGraph remain unchanged
     </script>
   </body>
 </html>
