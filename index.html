@@ -31,7 +31,8 @@
         flex-direction: column;
       }
       body h2 {
-        font-size: 2vw;
+        font-size: 1.9vw;
+        padding-top: 5px;
       }
 
       .main-container {
@@ -172,6 +173,15 @@
         margin: 8px 0;
         font-size: 18px;
         color: #f0f0f0;
+      }
+
+      @media screen and (max-width: 500px) {
+        body h2 {
+        font-size: 18px;
+      }
+      .main-container {
+        width: 95%;
+      }
       }
     </style>
   </head>
