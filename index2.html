@@ -13,7 +13,7 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
     />
-    <title>Ultimate Projectile Simulation</title>
+    <title>Ultimate Projectile Motion Simulation</title>
     <style>
       html,
       body {
@@ -29,37 +29,48 @@
       body {
         display: flex;
         flex-direction: column;
+        padding-bottom: 10px;
       }
-      body h2 {
-        font-size: 1.9vw;
-        padding-top: 5px;
+      h2 {
+        text-align: center;
+        margin: 8px 0;
+        font-size: 18px;
+        color: #ffffff;
+        font-weight: 600;
       }
-
       .main-container {
-        width: 90%;
+        width: 95%;
         margin: 10px auto;
         display: flex;
+        flex-direction: column; /* Stack on mobile */
         height: calc(100% - 40px);
-        column-gap: 5%;
-        padding: 10px;
+        gap: 10px;
+        padding: 5px;
         box-sizing: border-box;
       }
-
+      /* Desktop layout */
+      @media (min-width: 768px) {
+        .main-container {
+          flex-direction: row;
+          gap: 20px;
+        }
+      }
       .left-panel {
         display: flex;
         flex-direction: column;
         flex: 2;
-        gap: 5px;
+        gap: 8px;
       }
       #motionInfo {
         background: #2b2b3c;
         border: 1px solid #555;
-        padding: 6px 10px;
+        padding: 8px 12px;
         border-radius: 6px;
         font-size: 12px;
         margin-bottom: 5px;
         color: #f0f0f0;
-        width: fit-content;
+        width: 100%;
+        box-sizing: border-box;
       }
       #motionInfo span {
         font-weight: bold;
@@ -69,8 +80,9 @@
       #simCanvas {
         background: #12122a;
         border: 1px solid #555;
-        height: 250px;
+        height: 280px;
         width: 100%;
+        box-sizing: border-box;
       }
       .left-buttons {
         display: flex;
@@ -81,33 +93,41 @@
       .left-buttons button {
         background: #2b2b3c;
         color: #f0f0f0;
-        font-size: 12px;
-        border: none;
-        padding: 5px 10px;
+        font-size: 14px;
+        border: 1px solid #444;
+        padding: 6px 12px;
         border-radius: 4px;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
       }
       .left-buttons button:hover {
         background: #3b3b5a;
+        border-color: #666;
       }
-
+      .left-buttons button:active {
+        background: #4a4a7a;
+      }
       .side-panel {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 5px;
+        gap: 8px;
         overflow-y: auto;
+        padding: 5px;
+        max-height: 400px; /* Limit height on mobile */
       }
       .controls {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
         flex: 1;
       }
       .control {
         background: #2b2b3c;
         border: 1px solid #555;
-        padding: 6px;
+        padding: 8px;
         border-radius: 6px;
         display: flex;
         flex-direction: column;
@@ -117,78 +137,69 @@
       input[type="range"],
       select {
         width: 100%;
-        accent-color: #a8d8ff;
+        accent-color: #64b5f6; /* Brighter accent for sliders */
         cursor: pointer;
         background: #3b3b5a;
         color: #f0f0f0;
+        border: none;
+        padding: 3px;
+        border-radius: 3px;
       }
       input[type="checkbox"] {
         cursor: pointer;
-        accent-color: #a8d8ff;
+        accent-color: #64b5f6;
+        margin-right: 5px;
       }
       select {
         background-color: #3b3b5a;
+        padding: 4px;
       }
-
-      #results {
-        background: #2b2b3c;
-        border: 1px solid #555;
-        padding: 6px;
-        border-radius: 6px;
-        font-size: 14px;
-        color: #f0f0f0;
-      }
-
       #graphContainer {
         display: none;
         flex-direction: column;
         gap: 5px;
-        margin-top: 25px;
+        margin-top: 10px;
       }
       #graphCanvas {
         width: 100%;
         height: 120px;
         border: 1px solid #555;
         background: #1b1b2e;
+        box-sizing: border-box;
       }
       #graphLegend {
         display: flex;
         justify-content: center;
-        gap: 10px;
-        font-weight: bold;
+        gap: 15px;
+        font-weight: 500;
         font-size: 12px;
+        flex-wrap: wrap;
       }
       .legend-item {
         display: flex;
         align-items: center;
-        gap: 3px;
+        gap: 5px;
         color: #f0f0f0;
       }
       .legend-color {
         width: 15px;
         height: 4px;
+        border-radius: 2px;
       }
-
-      h2 {
-        text-align: center;
-        margin: 8px 0;
-        font-size: 18px;
-        color: #f0f0f0;
-      }
-
-      @media screen and (max-width: 500px) {
-        body h2 {
-          font-size: 18px;
-        }
-        .main-container {
-          width: 95%;
-        }
+      /* Ground line style */
+      .ground-line {
+        position: relative;
+        top: -3px;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: #888;
+        z-index: 10;
       }
     </style>
   </head>
   <body>
-    <h2>Projectile Motion Simulation</h2>
-
+    <h2>Projectile Motion Simulation (with Air Resistance)</h2>
     <div class="main-container">
       <div class="left-panel">
         <div id="motionInfo">
@@ -197,42 +208,46 @@
           <span id="rangeResult">0</span> m | Impact Speed:
           <span id="impactResult">0</span> m/s
         </div>
-        <canvas id="simCanvas" width="600" height="250"></canvas>
+        <!-- Add ground line container -->
+        <div style="position: relative">
+          <canvas id="simCanvas" width="600" height="280"></canvas>
+          <div class="ground-line"></div>
+        </div>
         <div class="left-buttons">
-          <button id="playResumeBtn" onclick=" startSimulation() ">
-            <span class="material-symbols-outlined" id="playResumeIcon"> play_arrow </span>
+          <button onclick="startSimulation()">
+            <span class="material-symbols-outlined">play_arrow</span> Start
           </button>
-          <button id="pauseResumeBtn" onclick="togglePauseResume()">
-            <span class="material-symbols-outlined" id="pauseResumeIcon">
-              play_pause
-            </span>
+          <button id="pauseResumeBtn" onclick="togglePauseResume()" disabled>
+            <span class="material-symbols-outlined" id="pauseResumeIcon"
+              >pause</span
+            >
+            Pause
           </button>
           <button onclick="stepSim()">
-            <span class="material-symbols-outlined"> skip_next </span>
+            <span class="material-symbols-outlined">skip_next</span> Step
           </button>
           <button onclick="resetSimulation()">
-            <span class="material-symbols-outlined">refresh</span>
+            <span class="material-symbols-outlined">refresh</span> Reset
           </button>
         </div>
         <div id="graphContainer">
           <canvas id="graphCanvas" width="600" height="120"></canvas>
           <div id="graphLegend">
             <div class="legend-item">
-              <div class="legend-color" style="background: red"></div>
-              KE
+              <div class="legend-color" style="background: #ff6b6b"></div>
+              Kinetic Energy (KE)
             </div>
             <div class="legend-item">
-              <div class="legend-color" style="background: blue"></div>
-              PE
+              <div class="legend-color" style="background: #4ecdc4"></div>
+              Potential Energy (PE)
             </div>
             <div class="legend-item">
-              <div class="legend-color" style="background: orange"></div>
+              <div class="legend-color" style="background: #ffd166"></div>
               Total Energy
             </div>
           </div>
         </div>
       </div>
-
       <div class="side-panel">
         <div class="controls">
           <div class="control">
@@ -317,30 +332,30 @@
       const gctx = document.getElementById("graphCanvas").getContext("2d");
       const ctx = simCanvas.getContext("2d");
       const graphContainer = document.getElementById("graphContainer");
+      const speed = document.getElementById("speed"),
+        angle = document.getElementById("angle"),
+        mass = document.getElementById("mass"),
+        drag = document.getElementById("drag"),
+        airToggle = document.getElementById("airToggle"),
+        graphToggle = document.getElementById("graphToggle"),
+        dtInput = document.getElementById("dt"),
+        zoomInput = document.getElementById("zoom"),
+        preset = document.getElementById("preset"),
+        pauseResumeBtn = document.getElementById("pauseResumeBtn");
 
-      const speed = document.getElementById("speed");
-      const angle = document.getElementById("angle");
-      const mass = document.getElementById("mass");
-      const drag = document.getElementById("drag");
-      const airToggle = document.getElementById("airToggle");
-      const graphToggle = document.getElementById("graphToggle");
-      const dt = document.getElementById("dt");
-      const zoomInput = document.getElementById("zoom");
-      const preset = document.getElementById("preset");
+      const speedVal = document.getElementById("speedVal"),
+        angleVal = document.getElementById("angleVal"),
+        massVal = document.getElementById("massVal"),
+        dragVal = document.getElementById("dragVal"),
+        dtValLabel = document.getElementById("dtVal"),
+        zoomVal = document.getElementById("zoomVal");
 
-      const speedVal = document.getElementById("speedVal");
-      const angleVal = document.getElementById("angleVal");
-      const massVal = document.getElementById("massVal");
-      const dragVal = document.getElementById("dragVal");
-      const dtValLabel = document.getElementById("dtVal");
-      const zoomVal = document.getElementById("zoomVal");
+      const timeResult = document.getElementById("timeResult"),
+        heightResult = document.getElementById("heightResult"),
+        rangeResult = document.getElementById("rangeResult"),
+        impactResult = document.getElementById("impactResult");
 
-      const timeResult = document.getElementById("timeResult");
-      const heightResult = document.getElementById("heightResult");
-      const rangeResult = document.getElementById("rangeResult");
-      const impactResult = document.getElementById("impactResult");
-
-      const G = 9.81;
+      const G = 9.81; // Gravitational acceleration (m/s²)
       let running = false,
         paused = false;
       let trail = [],
@@ -354,90 +369,156 @@
         dtVal = 0.02,
         zoom = 1;
 
+      // Initialize toggles
       graphToggle.checked = false;
       graphContainer.style.display = "none";
-      graphToggle.addEventListener("change", () => {
-        graphContainer.style.display = graphToggle.checked ? "flex" : "none";
+      pauseResumeBtn.disabled = true;
+
+      // Sync air resistance with drag coefficient
+      airToggle.addEventListener("change", () => {
+        if (airToggle.checked && Number(drag.value) === 0) {
+          drag.value = 0.3; // Default drag for air resistance
+          updateLabels();
+        }
       });
 
+      // Toggle energy graph
+      graphToggle.addEventListener("change", () => {
+        graphContainer.style.display = graphToggle.checked ? "flex" : "none";
+        if (graphToggle.checked) drawGraph(); // Redraw if enabled
+      });
+
+      // Update all labels when sliders change
       function updateLabels() {
         speedVal.textContent = Number(speed.value).toFixed(2);
         angleVal.textContent = Number(angle.value).toFixed(1);
         massVal.textContent = Number(mass.value).toFixed(2);
         dragVal.textContent = Number(drag.value).toFixed(2);
-        dtValLabel.textContent = Number(dt.value).toFixed(3);
+        dtValLabel.textContent = Number(dtInput.value).toFixed(3);
         zoomVal.textContent = Number(zoomInput.value).toFixed(2);
       }
 
-      [speed, angle, mass, drag, dt, zoomInput].forEach((i) =>
+      // Attach input listeners to sliders
+      [speed, angle, mass, drag, dtInput, zoomInput].forEach((i) =>
         i.addEventListener("input", updateLabels)
       );
       updateLabels();
 
+      // Preset configurations
       preset.addEventListener("change", () => {
-        if (preset.value === "baseball") {
-          mass.value = "0.145";
-          drag.value = "0.35";
-        } else if (preset.value === "arrow") {
-          mass.value = "0.04";
-          drag.value = "0.1";
-        } else if (preset.value === "cannonball") {
-          mass.value = "6";
-          drag.value = "0.47";
+        switch (preset.value) {
+          case "baseball":
+            speed.value = 45;
+            angle.value = 35;
+            mass.value = 0.145;
+            drag.value = 0.35;
+            airToggle.checked = true;
+            break;
+          case "arrow":
+            speed.value = 70;
+            angle.value = 50;
+            mass.value = 0.04;
+            drag.value = 0.1;
+            airToggle.checked = true;
+            break;
+          case "cannonball":
+            speed.value = 30;
+            angle.value = 45;
+            mass.value = 6;
+            drag.value = 0.47;
+            airToggle.checked = true;
+            break;
+          case "custom":
+            // Reset to default custom values
+            speed.value = 50;
+            angle.value = 45;
+            mass.value = 1;
+            drag.value = 0;
+            break;
         }
         updateLabels();
       });
 
-
+      // Pause/Resume functionality
       function togglePauseResume() {
         if (!running) return;
         paused = !paused;
+        const icon = document.getElementById("pauseResumeIcon");
+        icon.textContent = paused ? "play_arrow" : "pause";
+        pauseResumeBtn.textContent = paused ? " Resume" : " Pause";
+        pauseResumeBtn.prepend(icon); // Keep icon next to text
         if (!paused) requestAnimationFrame(animate);
       }
-      
+
+      // Main animation loop
       function animate() {
         if (!running) return;
         if (!paused) {
-          const m = Number(mass.value) || 1;
-          const c = Number(drag.value) || 0;
-          const v = Math.sqrt(vx * vx + vy * vy) || 1e-8;
-          const ax = airToggle.checked ? -(c * v * vx) / m : 0;
-          const ay = airToggle.checked ? -G - (c * v * vy) / m : -G;
+          const m = Number(mass.value) || 1,
+            c = Number(drag.value) || 0;
+          const v = Math.sqrt(vx * vx + vy * vy) || 1e-8; // Avoid division by zero
+          let ax = 0,
+            ay = -G; // Negative y = upward (canvas coordinate system)
 
+          // Apply air resistance if enabled
+          if (airToggle.checked) {
+            ax = -(c * v * vx) / m; // Drag opposes velocity
+            ay = -G - (c * v * vy) / m;
+          }
+
+          // Update velocity and position
           vx += ax * dtVal;
           vy += ay * dtVal;
           x += vx * dtVal;
           y += vy * dtVal;
           timeT += dtVal;
+
+          // Track maximum height
           if (y > maxHeight) maxHeight = y;
 
+          // Calculate energy (for graph)
           const KE = 0.5 * m * (vx * vx + vy * vy);
-          const PE = m * G * Math.max(y, 0);
+          const PE = m * G * Math.max(y, 0); // PE can't be negative
           energyPoints.push({ t: timeT, ke: KE, pe: PE, te: KE + PE });
-          trail.push({ x, y, vx, vy });
 
+          // Track trail (limit length for performance)
+          trail.push({ x, y, vx, vy });
+          if (trail.length > 500) trail.shift(); // Keep last 500 points
+
+          // Check if projectile hits the ground (y <= 0)
           if (y < 0) {
+            // Update results
             timeResult.textContent = timeT.toFixed(3);
             rangeResult.textContent = x.toFixed(3);
             impactResult.textContent = Math.sqrt(vx * vx + vy * vy).toFixed(3);
             heightResult.textContent = maxHeight.toFixed(3);
             running = false;
+            paused = false;
+            pauseResumeBtn.disabled = true;
+            pauseResumeBtn.innerHTML = '<span class="material-symbols-outlined">pause</span> Pause';
             render();
             drawGraph();
             return;
           }
         }
+
+        // Redraw simulation and graph
         render();
         drawGraph();
-        requestAnimationFrame(animate);
+        if (!paused) requestAnimationFrame(animate);
       }
 
+      // Start simulation
       function startSimulation() {
-        const v0 = Number(speed.value) || 0;
-        const ang = (Number(angle.value) * Math.PI) / 180 || 0;
-        dtVal = Number(dt.value) || 0.02;
+        if (running && !paused) return; // Avoid restarting while running
+        const v0 = Number(speed.value) || 0,
+          ang = (Number(angle.value) * Math.PI) / 180 || 0; // Convert degrees to radians
+
+        // Update simulation parameters
+        dtVal = Number(dtInput.value) || 0.02;
         zoom = Number(zoomInput.value) || 1;
 
+        // Reset state
         x = 0;
         y = 0;
         vx = v0 * Math.cos(ang);
@@ -449,59 +530,78 @@
         running = true;
         paused = false;
 
-        timeResult.textContent = "0";
-        heightResult.textContent = "0";
-        rangeResult.textContent = "0";
-        impactResult.textContent = "0";
+        // Reset results display
+        timeResult.textContent = "0.000";
+        heightResult.textContent = "0.000";
+        rangeResult.textContent = "0.000";
+        impactResult.textContent = "0.000";
+
+        // Enable pause button
+        pauseResumeBtn.disabled = false;
+        pauseResumeBtn.innerHTML = '<span class="material-symbols-outlined">pause</span> Pause';
+
+        // Start animation
         requestAnimationFrame(animate);
       }
 
-      function pauseSim() {
-        paused = true;
-      }
-      function resumeSim() {
-        if (!running) return;
-        paused = false;
-        requestAnimationFrame(animate);
-      }
+      // Step through simulation one frame
       function stepSim() {
         if (!running) {
           startSimulation();
           paused = true;
+          pauseResumeBtn.innerHTML = '<span class="material-symbols-outlined">play_arrow</span> Resume';
           return;
         }
         if (!paused) {
           paused = true;
+          pauseResumeBtn.innerHTML = '<span class="material-symbols-outlined">play_arrow</span> Resume';
           return;
         }
-        const m = Number(mass.value) || 1;
-        const c = Number(drag.value) || 0;
+
+        // Calculate one step of physics
+        const m = Number(mass.value) || 1,
+          c = Number(drag.value) || 0;
         const v = Math.sqrt(vx * vx + vy * vy) || 1e-8;
-        const ax = airToggle.checked ? -(c * v * vx) / m : 0;
-        const ay = airToggle.checked ? -G - (c * v * vy) / m : -G;
+        let ax = 0,
+          ay = -G;
+
+        if (airToggle.checked) {
+          ax = -(c * v * vx) / m;
+          ay = -G - (c * v * vy) / m;
+        }
+
+        // Update state
         vx += ax * dtVal;
         vy += ay * dtVal;
         x += vx * dtVal;
         y += vy * dtVal;
         timeT += dtVal;
         if (y > maxHeight) maxHeight = y;
+
+        // Track trail and energy
         trail.push({ x, y, vx, vy });
-        const KE = 0.5 * m * (vx * vx + vy * vy);
-        const PE = m * G * Math.max(y, 0);
+        const KE = 0.5 * m * (vx * vx + vy * vy),
+          PE = m * G * Math.max(y, 0);
         energyPoints.push({ t: timeT, ke: KE, pe: PE, te: KE + PE });
 
+        // Check for ground impact
         if (y < 0) {
           running = false;
+          pauseResumeBtn.disabled = true;
+          pauseResumeBtn.innerHTML = '<span class="material-symbols-outlined">pause</span> Pause';
+          // Update results
           timeResult.textContent = timeT.toFixed(3);
           rangeResult.textContent = x.toFixed(3);
           impactResult.textContent = Math.sqrt(vx * vx + vy * vy).toFixed(3);
           heightResult.textContent = maxHeight.toFixed(3);
         }
+
+        // Redraw
         render();
         drawGraph();
       }
 
-            // Reset simulation to initial state
+      // Reset simulation to initial state
       function resetSimulation() {
         running = false;
         paused = false;
@@ -514,17 +614,24 @@
         timeT = 0;
         maxHeight = 0;
 
+        // Reset UI
+        timeResult.textContent = "0.000";
+        heightResult.textContent = "0.000";
+        rangeResult.textContent = "0.000";
+        impactResult.textContent = "0.000";
+        pauseResumeBtn.disabled = true;
+        pauseResumeBtn.innerHTML = '<span class="material-symbols-outlined">pause</span> Pause';
         ctx.clearRect(0, 0, simCanvas.width, simCanvas.height);
         gctx.clearRect(0, 0, gctx.canvas.width, gctx.canvas.height);
       }
 
-
+      // Render simulation (projectile, trail, velocity vector)
       function render() {
         ctx.clearRect(0, 0, simCanvas.width, simCanvas.height);
 
         // Draw trail (semi-transparent for clarity)
         if (trail.length > 1) {
-          ctx.strokeStyle = "blue"; // Light blue
+          ctx.strokeStyle = "rgba(78, 205, 196, 0.6)"; // Light blue
           ctx.lineWidth = 2;
           ctx.beginPath();
           trail.forEach((p, i) => {
@@ -543,7 +650,7 @@
           const py = simCanvas.height - last.y * zoom;
 
           // Projectile body
-          ctx.fillStyle = "red"; // Red
+          ctx.fillStyle = "#ff6b6b"; // Red
           ctx.beginPath();
           ctx.arc(px, py, 6, 0, Math.PI * 2);
           ctx.fill();
@@ -552,8 +659,8 @@
           ctx.stroke();
 
           // Draw velocity vector (scaled for visibility)
-          const vectorScale = 0.4 * zoom; // Adjust scale with zoom
-          ctx.strokeStyle = "green"; // Yellow
+          const vectorScale = 0.3 * zoom; // Adjust scale with zoom
+          ctx.strokeStyle = "rgba(255, 209, 102, 0.8)"; // Yellow
           ctx.lineWidth = 2;
           ctx.beginPath();
           ctx.moveTo(px, py);
@@ -569,26 +676,19 @@
           ctx.beginPath();
           ctx.moveTo(px + last.vx * vectorScale, py - last.vy * vectorScale);
           ctx.lineTo(
-            px +
-              last.vx * vectorScale -
-              arrowLength * Math.cos(angle - Math.PI / 6),
-            py -
-              last.vy * vectorScale -
-              arrowLength * Math.sin(angle - Math.PI / 6)
+            px + last.vx * vectorScale - arrowLength * Math.cos(angle - Math.PI / 6),
+            py - last.vy * vectorScale - arrowLength * Math.sin(angle - Math.PI / 6)
           );
           ctx.moveTo(px + last.vx * vectorScale, py - last.vy * vectorScale);
           ctx.lineTo(
-            px +
-              last.vx * vectorScale -
-              arrowLength * Math.cos(angle + Math.PI / 6),
-            py -
-              last.vy * vectorScale -
-              arrowLength * Math.sin(angle + Math.PI / 6)
+            px + last.vx * vectorScale - arrowLength * Math.cos(angle + Math.PI / 6),
+            py - last.vy * vectorScale - arrowLength * Math.sin(angle + Math.PI / 6)
           );
           ctx.stroke();
         }
       }
 
+      // Draw energy graph
       function drawGraph() {
         if (!graphToggle.checked || energyPoints.length < 2) {
           gctx.clearRect(0, 0, gctx.canvas.width, gctx.canvas.height);
@@ -649,10 +749,20 @@
         };
 
         // Plot each energy type
-        plotLine("red", "ke"); // Kinetic Energy (red)
-        plotLine("blue", "pe"); // Potential Energy (teal)
-        plotLine("orange", "te"); // Total Energy (yellow)
+        plotLine("#ff6b6b", "ke"); // Kinetic Energy (red)
+        plotLine("#4ecdc4", "pe"); // Potential Energy (teal)
+        plotLine("#ffd166", "te"); // Total Energy (yellow)
       }
+
+      // Handle window resize (optional, but improves usability)
+      window.addEventListener("resize", () => {
+        // Adjust canvas sizes if needed (keep aspect ratio)
+        const newWidth = Math.min(window.innerWidth * 0.6, 800);
+        simCanvas.width = newWidth;
+        graphCanvas.width = newWidth;
+        render();
+        drawGraph();
+      });
     </script>
   </body>
 </html>
